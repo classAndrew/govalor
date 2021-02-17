@@ -32,6 +32,8 @@ func main() {
 	// :name is path parameter, not query string parameter
 	r.GET("/usertotalxp/:guild/:name", controllers.FindUserTotalXP)
 	r.GET("/usertotalxp/:guild", controllers.FindUserTotalXP)
+	r.GET("/activity/guild/:guild/:timeStart/:timeEnd", controllers.FindActivityGuild)
+	r.GET("/activity/player/:name/:timeStart/:timeEnd", controllers.FindActivityMember)
 	r.GET("/usertotalxp", controllers.FindUserTotalXP)
 	r.POST("/usertotalxp", controllers.CreateUserTotalXP)
 	r.PATCH("/usertotalxp/:name", controllers.UpdateUserTotalXP)
