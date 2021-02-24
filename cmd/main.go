@@ -46,10 +46,15 @@ func main() {
 		"TheNoLifes", "Wheres The Finish", "Ultra Violet", "The Multiverse", "Elit Magyar Legio",
 		"WrathOfTheFallen",
 	}
+	allies := []string{"Titans Valor", "Emorians", "Empire of Sindria", "Paladins United",
+		"Lux Nova",
+	}
+	// golang allows python's unpacking * and js' ...
+	allGuilds := append(enemies, allies...)
 	go func() {
 		time.Sleep(time.Second * 60 * 5)                                          // take five minutes before starting each up
 		go services.UpdateMemberXP([]string{"Titans%20Valor"}, time.Second*60*30) // thirty minutes
-		go services.CheckActivity(enemies, time.Second*60*60)                     // hourly
+		go services.CheckActivity(allGuilds, time.Second*60*60)                   // hourly
 	}()
 
 	r.Run(":8080")
