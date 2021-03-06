@@ -1,5 +1,6 @@
 .env
 main
+guilds.json
 
 # Binaries for programs and plugins
 *.exe

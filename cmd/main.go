@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"log"
 	"time"
 
@@ -40,19 +42,27 @@ func main() {
 
 	log.SetPrefix("[Valor Engine] ")
 	log.Println("Starting Server")
-	enemies := []string{"GYP ON TOP", "Aequitas", "Avicia", "IceBlue Team", "BlueStoneGroup",
-		"Bovemists", "Guardian of Wynn", "Eden", "Cyphrus Code", "Fuzzy Spiders", "Nerfuria",
-		"Nethers Ascent", "ShadowFall", "Spectral Cabbage", "The Dark Phoenix", "The Mage Legacy",
-		"TheNoLifes", "Wheres The Finish", "Ultra Violet", "The Multiverse", "Elit Magyar Legio",
-		"WrathOfTheFallen",
+	// enemies := []string{"GYP ON TOP", "Aequitas", "Avicia", "IceBlue Team", "BlueStoneGroup",
+	// 	"Bovemists", "Guardian of Wynn", "Eden", "Cyphrus Code", "Fuzzy Spiders", "Nerfuria",
+	// 	"Nethers Ascent", "ShadowFall", "Spectral Cabbage", "The Dark Phoenix", "The Mage Legacy",
+	// 	"TheNoLifes", "Wheres The Finish", "Ultra Violet", "The Multiverse", "Elit Magyar Legio",
+	// 	"WrathOfTheFallen",
+	// }
+	// allies := []string{"Titans Valor", "Emorians", "Empire of Sindria", "Paladins United",
+	// 	"Lux Nova",
+	// }
+	data, err := ioutil.ReadFile("guilds.json")
+	if err != nil {
+		log.Fatal(err.Error())
 	}
-	allies := []string{"Titans Valor", "Emorians", "Empire of Sindria", "Paladins United",
-		"Lux Nova",
-	}
+	var guildTargets map[string][]string
+	json.Unmarshal(data, &guildTargets)
+	enemies := guildTargets["enemies"]
+	allies := guildTargets["allies"]
 	// golang allows python's unpacking * and js' ...
 	allGuilds := append(enemies, allies...)
 	go func() {
-		time.Sleep(time.Second * 60 * 5)                                          // take five minutes before starting each up
+		time.Sleep(time.Second * 60 * 0)                                          // take five minutes before starting each up
 		go services.UpdateMemberXP([]string{"Titans%20Valor"}, time.Second*60*30) // thirty minutes
 		go services.CheckActivity(allGuilds, time.Second*60*60)                   // hourly
 	}()
