@@ -36,10 +36,23 @@ func UpdateMemberXP(guildList []string, delay time.Duration) {
 				if !ok {
 					continue
 				}
+				reqInfo, errorNowtime := res["request"].(map[string]interface{})
+				if !errorNowtime {
+					log.Fatalln("Error casting request info to interface{}")
+					continue
+				}
+				_nowtime, _ := reqInfo["timestamp"].(float64)
+				nowtime := uint64(_nowtime)
+
 				members, _ := res["members"].([]interface{})
 				for i := range members {
 					go func(m map[string]interface{}, guildName string) {
 						memberName, _ := m["name"].(string)
+						memberUUID, errUUID := m["uuid"].(string)
+						if !errUUID {
+							log.Fatal("Error casting uuid")
+							return
+						}
 						gxpFloat, _ := m["contributed"].(float64)
 						gxpContrib := int64(gxpFloat)
 						var user models.UserTotalXP
@@ -53,6 +66,7 @@ func UpdateMemberXP(guildList []string, delay time.Duration) {
 								apihelper.UpdateUserTotalXP(user)
 							} else if delta > 0 {
 								user.XP += delta
+								apihelper.CreateXPRecord(memberUUID, memberName, guildName, uint64(delta), nowtime)
 								apihelper.UpdateUserTotalXP(user)
 							}
 							// don't bother sending update query if delta = 0

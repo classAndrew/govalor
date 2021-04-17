@@ -18,7 +18,7 @@ func AddActivityMember(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	apihelper.AddActivityMember(member.Name, member.Guild, int64(time.Now().Nanosecond()))
+	apihelper.AddActivityMember(member.UUID, member.Name, member.Guild, int64(time.Now().Nanosecond()))
 	c.JSON(http.StatusOK, gin.H{"data": member})
 }
 

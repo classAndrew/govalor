@@ -5,8 +5,8 @@ import (
 )
 
 // AddActivityMember .
-func AddActivityMember(name string, guild string, timestamp int64) {
-	models.DB.Create(&models.ActivityMember{Name: name, Guild: guild, Timestamp: timestamp})
+func AddActivityMember(uuid string, name string, guild string, timestamp int64) {
+	models.DB.Create(&models.ActivityMember{UUID: uuid, Name: name, Guild: guild, Timestamp: timestamp})
 }
 
 // FindActivityGuild .

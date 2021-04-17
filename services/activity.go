@@ -56,9 +56,10 @@ func CheckActivity(guildList []string, delay time.Duration) {
 				guildName := resp["name"].(string)
 				for _, member := range members {
 					name := member.(map[string]interface{})["name"].(string)
+					uuid := member.(map[string]interface{})["uuid"].(string)
 					_, online := set[name]
 					if online {
-						go apihelper.AddActivityMember(name, guildName, timestamp)
+						go apihelper.AddActivityMember(uuid, name, guildName, timestamp)
 					}
 				}
 				break

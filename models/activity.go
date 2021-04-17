@@ -2,6 +2,7 @@ package models
 
 // ActivityMember .
 type ActivityMember struct {
+	UUID      string `json:"uuid" gorm:"primaryKey"`
 	Name      string `json:"name"`
 	Guild     string `json:"guild"`
 	Timestamp int64  `json:"timestamp"`

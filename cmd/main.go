@@ -6,9 +6,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/classAndrew/govalor/services"
-
 	"github.com/classAndrew/govalor/controllers"
+	"github.com/classAndrew/govalor/services"
 
 	"github.com/classAndrew/govalor/models"
 
@@ -62,7 +61,7 @@ func main() {
 	// golang allows python's unpacking * and js' ...
 	allGuilds := append(enemies, allies...)
 	go func() {
-		time.Sleep(time.Second * 60 * 0)                                          // take five minutes before starting each up
+		time.Sleep(time.Second * 60 * 5)                                          // take five minutes before starting each up
 		go services.UpdateMemberXP([]string{"Titans%20Valor"}, time.Second*60*30) // thirty minutes
 		go services.CheckActivity(allGuilds, time.Second*60*60)                   // hourly
 	}()
