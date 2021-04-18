@@ -85,3 +85,35 @@ func FindActivityMember(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"data": times})
 }
+
+// CountGuildCaptain returns {time: guild captain online count} list
+func CountGuildCaptain(c *gin.Context) {
+	guild, timeStartS, timeEndS := c.Param("guild"), c.Param("timeStart"), c.Param("timeEnd")
+	var timeStart, timeEnd int64 = 0, int64(time.Now().Nanosecond())
+	if timeStartS != "" {
+		temp, err := strconv.Atoi(timeStartS)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		timeStart = int64(temp)
+	}
+	if timeEndS != "" {
+		temp, err := strconv.Atoi(timeEndS)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		timeEnd = int64(temp)
+	}
+	result := apihelper.FindCaptainActivityGuild(guild, timeStart, timeEnd)
+	timeCounts := make(map[int64]int)
+	for _, v := range result {
+		_, exists := timeCounts[v.Timestamp]
+		if !exists {
+			timeCounts[v.Timestamp] = 0
+		}
+		timeCounts[v.Timestamp] += 1
+	}
+	c.JSON(http.StatusOK, gin.H{"data": timeCounts})
+}

@@ -35,6 +35,7 @@ func main() {
 	r.GET("/usertotalxp/:guild", controllers.FindUserTotalXP)
 	r.GET("/activity/guild/:guild/:timeStart/:timeEnd", controllers.FindActivityGuild)
 	r.GET("/activity/player/:name/:timeStart/:timeEnd", controllers.FindActivityMember)
+	r.GET("/activity/captains/:guild/:timeStart/:timeEnd", controllers.CountGuildCaptain)
 	r.GET("/usertotalxp", controllers.FindUserTotalXP)
 	r.GET("/incxp/:uuid/:t1/:t2", controllers.GetPlayerIncXP)
 	r.POST("/usertotalxp", controllers.CreateUserTotalXP)
