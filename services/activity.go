@@ -6,6 +6,8 @@ import (
 
 	"github.com/classAndrew/govalor/apihelper"
 
+	"github.com/classAndrew/govalor/models"
+
 	"github.com/classAndrew/govalor/util"
 )
 
@@ -44,6 +46,8 @@ func CheckActivity(guildList []string, delay time.Duration) {
 				"action": "guildStats", "command": guild,
 			})
 		}
+
+		currentOnline := []models.ActivityMember{}
 		for i := 0; i < total; i++ {
 			select {
 			case resp := <-ch:
@@ -59,7 +63,7 @@ func CheckActivity(guildList []string, delay time.Duration) {
 					uuid := member.(map[string]interface{})["uuid"].(string)
 					_, online := set[name]
 					if online {
-						go apihelper.AddActivityMember(uuid, name, guildName, timestamp)
+						currentOnline = append(currentOnline, models.ActivityMember{UUID: uuid, Name: name, Guild: guildName, Timestamp: timestamp})
 					}
 				}
 				break
@@ -67,6 +71,7 @@ func CheckActivity(guildList []string, delay time.Duration) {
 				log.Println("Timeout get from guild")
 			}
 		}
+		go apihelper.AddActivityMemberBulk(currentOnline)
 		time.Sleep(delay)
 	}
 }

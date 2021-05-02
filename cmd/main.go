@@ -62,6 +62,7 @@ func main() {
 	allies := guildTargets["allies"]
 	// golang allows python's unpacking * and js' ...
 	allGuilds := append(enemies, allies...)
+	_ = allGuilds
 	go func() {
 		time.Sleep(time.Second * 60 * 5)                                          // take five minutes before starting each up
 		go services.UpdateMemberXP([]string{"Titans%20Valor"}, time.Second*60*30) // thirty minutes

@@ -15,6 +15,7 @@ type UserTotalXP struct {
 	XP     int64  `json:"xp"`
 	LastXP int64  `json:"lastxp"`
 	Guild  string `json:"guild"`
+	UUID   string `json:"uuid" gorm:"varchar(36)"`
 }
 
 // UserTotalXPResponse .

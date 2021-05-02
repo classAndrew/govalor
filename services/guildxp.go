@@ -43,43 +43,54 @@ func UpdateMemberXP(guildList []string, delay time.Duration) {
 				}
 				_nowtime, _ := reqInfo["timestamp"].(float64)
 				nowtime := uint64(_nowtime)
+				_ = nowtime
 
 				members, _ := res["members"].([]interface{})
+
+				guildMembers := make([]models.GuildMember, len(members))
+				contribMap := make(map[string]int64)
 				for i := range members {
-					go func(m map[string]interface{}, guildName string) {
-						memberName, _ := m["name"].(string)
-						memberUUID, errUUID := m["uuid"].(string)
-						if !errUUID {
-							log.Fatal("Error casting uuid")
-							return
-						}
-						gxpFloat, _ := m["contributed"].(float64)
-						gxpContrib := int64(gxpFloat)
-						var user models.UserTotalXP
-						err := apihelper.FindSpecificUserTotalXP(guildName, memberName, &user)
-						if err == nil {
-							// the user has left so their current xp count is less than previous
-							delta := gxpContrib - user.LastXP
-							user.LastXP = gxpContrib
-							if delta < 0 {
-								user.XP += gxpContrib
-								apihelper.UpdateUserTotalXP(user)
-							} else if delta > 0 {
-								user.XP += delta
-								apihelper.CreateXPRecord(memberUUID, memberName, guildName, uint64(delta), nowtime)
-								apihelper.UpdateUserTotalXP(user)
-							}
-							// don't bother sending update query if delta = 0
-						} else if err.Error() == "record not found" {
-							// user doesn't exist, make one
-							if err := apihelper.CreateUserTotalXP(guildName, memberName, gxpContrib); err != nil {
-								log.Fatalln(err.Error())
-							}
-						} else {
-							log.Fatalln(err.Error())
-						}
-					}(members[i].(map[string]interface{}), guildName)
+					m := members[i].(map[string]interface{})
+					memberName, _ := m["name"].(string)
+					memberUUID, errUUID := m["uuid"].(string)
+					if !errUUID {
+						log.Fatal("Error casting uuid")
+						return
+					}
+					gxpFloat, _ := m["contributed"].(float64)
+					gxpContrib := int64(gxpFloat)
+					guildMembers[i] = models.GuildMember{Name: memberName, UUID: memberUUID, Guild: guildName}
+					contribMap[memberUUID] = gxpContrib
 				}
+
+				apihelper.UpdateMemberListBatch(guildMembers)
+				lastXPs := apihelper.GetGuildMembersXP()
+				updatedXPs := make([]models.UserTotalXP, len(lastXPs))
+				sliceDelta := []models.MemberRecordXP{}
+				for i := range lastXPs {
+					user := lastXPs[i]
+					gxpContrib := contribMap[user.UUID]
+					delta := gxpContrib - user.LastXP
+					user.LastXP = gxpContrib
+					if delta < 0 {
+						user.XP += gxpContrib
+						// apihelper.UpdateUserTotalXP(user)
+					} else if delta > 0 {
+						user.XP += delta
+						sliceDelta = append(sliceDelta, models.MemberRecordXP{Guild: guildName, Name: user.Name, UUID: user.UUID, XPGain: uint64(delta), Timestamp: nowtime})
+						// apihelper.CreateXPRecord(memberUUID, memberName, guildName, uint64(delta), nowtime)
+						// apihelper.UpdateUserTotalXP(user)
+					}
+					updatedXPs[i].Guild = guildName
+					updatedXPs[i].LastXP = gxpContrib
+					updatedXPs[i].Name = user.Name
+					updatedXPs[i].XP = user.XP
+					updatedXPs[i].UUID = user.UUID
+				}
+
+				apihelper.UpdateUserTotalXPTX(updatedXPs)
+				apihelper.InsertXPRecordBatch(sliceDelta)
+
 			case <-time.After(10 * time.Second):
 				log.Println("Failed req from timeout")
 			}

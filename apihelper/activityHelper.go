@@ -1,7 +1,9 @@
 package apihelper
 
 import (
+	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/classAndrew/govalor/models"
@@ -11,6 +13,42 @@ import (
 // AddActivityMember .
 func AddActivityMember(uuid string, name string, guild string, timestamp int64) {
 	models.DB.Create(&models.ActivityMember{UUID: uuid, Name: name, Guild: guild, Timestamp: timestamp})
+}
+
+// AddActivityMemberBulk adds multiple activity records
+func AddActivityMemberBulk(members []models.ActivityMember) {
+	tx := models.DB.Begin()
+	batchSize := 50
+	batches := len(members) / batchSize
+	if len(members)%batchSize != 0 {
+		batches++
+	}
+	for i := 0; i < batches; i++ {
+		upTo := (i + 1) * batchSize
+		if upTo > len(members) {
+			upTo = len(members)
+		}
+
+		valueStrings := []string{}
+		valueArgs := []interface{}{}
+		for k := i * batchSize; k < upTo; k++ {
+			valueStrings = append(valueStrings, "(?, ?, ?, ?)")
+			valueArgs = append(valueArgs, members[k].UUID, members[k].Name, members[k].Guild, members[k].Timestamp)
+		}
+
+		stmt := fmt.Sprintf("INSERT INTO activity_members (uuid, name, guild, timestamp) VALUES %s", strings.Join(valueStrings, ","))
+
+		err := tx.Exec(stmt, valueArgs...).Error
+		if err != nil {
+			tx.Rollback()
+			log.Fatalln(err)
+		}
+	}
+
+	err := tx.Commit().Error
+	if err != nil {
+		log.Fatalln(err)
+	}
 }
 
 // FindActivityGuild .

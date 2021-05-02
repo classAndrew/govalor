@@ -21,12 +21,46 @@ func UpdateUserTotalXP(input models.UserTotalXP) error {
 	return nil
 }
 
+// UpdateUserTotalXPTX modifies the DB table but in a single transaction
+func UpdateUserTotalXPTX(members []models.UserTotalXP) {
+	tx := models.DB.Begin()
+	stmt := "UPDATE user_total_xps SET last_xp = xp"
+
+	err := tx.Exec(stmt).Error
+	if err != nil {
+		tx.Rollback()
+		log.Fatalln(err)
+	}
+	for i := 0; i < len(members); i++ {
+
+		stmt := "UPDATE user_total_xps SET xp = ? WHERE uuid = ?"
+
+		err := tx.Exec(stmt, members[i].XP, members[i].UUID).Error
+		if err != nil {
+			tx.Rollback()
+			log.Fatalln(err)
+		}
+	}
+
+	err = tx.Commit().Error
+	if err != nil {
+		log.Fatalln(err)
+	}
+}
+
 // FindSpecificUserTotalXP fetches specfic a user i.e. with guild name
 func FindSpecificUserTotalXP(guild string, name string, user *models.UserTotalXP) error {
 	if err := models.DB.Where("name = ?", name).Where("guild = ?", guild).First(user).Error; err != nil {
 		return err
 	}
 	return nil
+}
+
+// GetGuildMembersXP does above but all guild members
+func GetGuildMembersXP() []models.UserTotalXP {
+	var res []models.UserTotalXP
+	models.DB.Table("user_total_xps").Find(&res)
+	return res
 }
 
 // CreateUserTotalXP creates record. errors if record exists

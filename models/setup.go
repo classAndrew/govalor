@@ -26,5 +26,6 @@ func ConnectDatabase() {
 	database.AutoMigrate(&UserTotalXP{})
 	database.AutoMigrate(&ActivityMember{})
 	database.AutoMigrate(&MemberRecordXP{})
+	database.AutoMigrate(&GuildMember{})
 	DB = database
 }
