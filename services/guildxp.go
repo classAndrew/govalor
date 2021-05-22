@@ -66,9 +66,11 @@ func UpdateMemberXP(guildList []string, delay time.Duration) {
 				apihelper.UpdateMemberListBatch(guildMembers)
 				lastXPs := apihelper.GetGuildMembersXP()
 
+				storedCurrentXP := make(map[string]int64)
 				uuidToLastXP := make(map[string]int64)
 				for _, lastMember := range lastXPs {
 					uuidToLastXP[lastMember.UUID] = lastMember.LastXP
+					storedCurrentXP[lastMember.UUID] = lastMember.XP
 				}
 
 				updatedXPs := []models.UserTotalXP{}
@@ -78,6 +80,7 @@ func UpdateMemberXP(guildList []string, delay time.Duration) {
 					m := guildMembers[i]
 					memberUUID := m.UUID
 					lastXPs, ok := uuidToLastXP[memberUUID]
+					// fmt.Printf("%s %d\n", m.Name, contribMap[memberUUID])
 					if !ok {
 						// new join.
 						apihelper.CreateUserTotalXP(m.Guild, m.Name, contribMap[m.Name], m.UUID)
@@ -88,7 +91,7 @@ func UpdateMemberXP(guildList []string, delay time.Duration) {
 					delta := gxpContrib - lastXPs
 
 					user := models.UserTotalXP{}
-					user.LastXP = gxpContrib
+					user.XP = storedCurrentXP[memberUUID]
 					if delta < 0 {
 						user.XP += gxpContrib
 						// apihelper.UpdateUserTotalXP(user)
