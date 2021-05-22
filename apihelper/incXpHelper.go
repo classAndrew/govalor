@@ -33,12 +33,11 @@ func InsertXPRecordBatch(records []models.MemberRecordXP) {
 		valueStrings := []string{}
 		valueArgs := []interface{}{}
 		for k := i * batchSize; k < upTo; k++ {
-			valueStrings = append(valueStrings, "(?, ?)")
+			valueStrings = append(valueStrings, "(?, ?, ?, ?, ?)")
 			valueArgs = append(valueArgs, records[k].UUID, records[k].Name, records[k].Guild, records[k].XPGain, records[k].Timestamp)
 		}
 
 		stmt := fmt.Sprintf("INSERT INTO member_record_xps (uuid, name, guild, xp_gain, timestamp) VALUES %s", strings.Join(valueStrings, ","))
-
 		err := tx.Exec(stmt, valueArgs...).Error
 		if err != nil {
 			tx.Rollback()

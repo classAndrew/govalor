@@ -64,7 +64,7 @@ func GetGuildMembersXP() []models.UserTotalXP {
 }
 
 // CreateUserTotalXP creates record. errors if record exists
-func CreateUserTotalXP(guild string, name string, xp int64) error {
+func CreateUserTotalXP(guild string, name string, xp int64, uuid string) error {
 	var user models.UserTotalXP
 	err := FindSpecificUserTotalXP(guild, name, &user)
 
@@ -72,7 +72,7 @@ func CreateUserTotalXP(guild string, name string, xp int64) error {
 		return errors.New("record already exists")
 	} else if err.Error() == "record not found" {
 		// this is good, no existing users found so create new record
-		models.DB.Create(&models.UserTotalXP{Guild: guild, Name: name, XP: xp, LastXP: xp})
+		models.DB.Create(&models.UserTotalXP{Guild: guild, Name: name, XP: xp, LastXP: xp, UUID: uuid})
 		return nil
 	} else {
 		log.Println(err.Error())

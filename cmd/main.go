@@ -64,9 +64,9 @@ func main() {
 	allGuilds := append(enemies, allies...)
 	_ = allGuilds
 	go func() {
-		time.Sleep(time.Second * 60 * 5)                                          // take five minutes before starting each up
+		// time.Sleep(time.Second * 60 * 5)                                          // take five minutes before starting each up
 		go services.UpdateMemberXP([]string{"Titans%20Valor"}, time.Second*60*30) // thirty minutes
-		go services.CheckActivity(allGuilds, time.Second*60*60)                   // hourly
+		// go services.CheckActivity(allGuilds, time.Second*60*60)                   // hourly
 	}()
 
 	r.Run(":8080")

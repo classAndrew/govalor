@@ -65,27 +65,47 @@ func UpdateMemberXP(guildList []string, delay time.Duration) {
 
 				apihelper.UpdateMemberListBatch(guildMembers)
 				lastXPs := apihelper.GetGuildMembersXP()
-				updatedXPs := make([]models.UserTotalXP, len(lastXPs))
+
+				uuidToLastXP := make(map[string]int64)
+				for _, lastMember := range lastXPs {
+					uuidToLastXP[lastMember.UUID] = lastMember.LastXP
+				}
+
+				updatedXPs := []models.UserTotalXP{}
 				sliceDelta := []models.MemberRecordXP{}
-				for i := range lastXPs {
-					user := lastXPs[i]
-					gxpContrib := contribMap[user.UUID]
-					delta := gxpContrib - user.LastXP
+
+				for i := range guildMembers {
+					m := guildMembers[i]
+					memberUUID := m.UUID
+					lastXPs, ok := uuidToLastXP[memberUUID]
+					if !ok {
+						// new join.
+						apihelper.CreateUserTotalXP(m.Guild, m.Name, contribMap[m.Name], m.UUID)
+						continue
+					}
+
+					gxpContrib := contribMap[memberUUID]
+					delta := gxpContrib - lastXPs
+
+					user := models.UserTotalXP{}
 					user.LastXP = gxpContrib
 					if delta < 0 {
 						user.XP += gxpContrib
 						// apihelper.UpdateUserTotalXP(user)
 					} else if delta > 0 {
 						user.XP += delta
-						sliceDelta = append(sliceDelta, models.MemberRecordXP{Guild: guildName, Name: user.Name, UUID: user.UUID, XPGain: uint64(delta), Timestamp: nowtime})
-						// apihelper.CreateXPRecord(memberUUID, memberName, guildName, uint64(delta), nowtime)
+						sliceDelta = append(sliceDelta, models.MemberRecordXP{Guild: guildName, Name: m.Name, UUID: m.UUID, XPGain: uint64(delta), Timestamp: nowtime})
+						// apihelper.CreateXPRecord(user.UUID, user.Name, user.Guild, uint64(delta), )
 						// apihelper.UpdateUserTotalXP(user)
+
+						// apihelper.CreateUserTotalXP(user.Guild, user.Name, user.XP, user.UUID)
 					}
-					updatedXPs[i].Guild = guildName
-					updatedXPs[i].LastXP = gxpContrib
-					updatedXPs[i].Name = user.Name
-					updatedXPs[i].XP = user.XP
-					updatedXPs[i].UUID = user.UUID
+					user.Guild = guildName
+					user.LastXP = gxpContrib
+					user.Name = m.Name
+					user.UUID = m.UUID
+
+					updatedXPs = append(updatedXPs, user)
 				}
 
 				apihelper.UpdateUserTotalXPTX(updatedXPs)

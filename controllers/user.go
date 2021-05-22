@@ -54,7 +54,7 @@ func CreateUserTotalXP(c *gin.Context) {
 	// 	c.JSON(http.StatusAlreadyReported, gin.H{"error": "user already exists"})
 	// 	return
 	// }
-	if err := apihelper.CreateUserTotalXP(input.Guild, input.Name, input.XP); err != nil {
+	if err := apihelper.CreateUserTotalXP(input.Guild, input.Name, input.XP, input.UUID); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
