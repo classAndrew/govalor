@@ -8,6 +8,7 @@ import (
 
 	"github.com/classAndrew/govalor/controllers"
 	"github.com/classAndrew/govalor/services"
+	"github.com/classAndrew/govalor/ws"
 
 	"github.com/classAndrew/govalor/models"
 
@@ -41,6 +42,10 @@ func main() {
 	r.POST("/usertotalxp", controllers.CreateUserTotalXP)
 	r.PATCH("/usertotalxp/:name", controllers.UpdateUserTotalXP)
 
+	r.GET("/ws", func(c *gin.Context) {
+		ws.M.HandleRequest(c.Writer, c.Request)
+	})
+
 	log.SetPrefix("[Valor Engine] ")
 	log.Println("Starting Server")
 	// enemies := []string{"GYP ON TOP", "Aequitas", "Avicia", "IceBlue Team", "BlueStoneGroup",
@@ -56,6 +61,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
+
 	var guildTargets map[string][]string
 	json.Unmarshal(data, &guildTargets)
 	enemies := guildTargets["enemies"]
@@ -63,10 +69,15 @@ func main() {
 	// golang allows python's unpacking * and js' ...
 	allGuilds := append(enemies, allies...)
 	_ = allGuilds
+
+	// handle websocket conns
+	ws.M.HandleConnect(ws.WShandler)
+
 	go func() {
-		// time.Sleep(time.Second * 60 * 5)                                          // take five minutes before starting each up
+		// time.Sleep(time.Second * 10) // take five minutes before starting each up
 		go services.UpdateMemberXP([]string{"Titans%20Valor"}, time.Second*60*30) // thirty minutes
-		// go services.CheckActivity(allGuilds, time.Second*60*60) // hourly
+		go services.CheckActivity(allGuilds, time.Second*60*60)                   // hourly
+		go services.TerritoryTrack(time.Second * 60)
 	}()
 
 	r.Run(":8080")

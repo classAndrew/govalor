@@ -27,5 +27,6 @@ func ConnectDatabase() {
 	database.AutoMigrate(&ActivityMember{})
 	database.AutoMigrate(&MemberRecordXP{})
 	database.AutoMigrate(&GuildMember{})
+	database.AutoMigrate(&Territory{})
 	DB = database
 }
