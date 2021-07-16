@@ -59,7 +59,11 @@ func CheckActivity(guildList []string, delay time.Duration) {
 				// shadow
 				guildName := resp["name"].(string)
 				for _, member := range members {
-					name := member.(map[string]interface{})["name"].(string)
+					name, ok := member.(map[string]interface{})["name"].(string)
+					if !ok {
+						log.Println("That one problem")
+						break
+					}
 					uuid := member.(map[string]interface{})["uuid"].(string)
 					_, online := set[name]
 					if online {
